@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Thống Kê Báo Cáo Sai Line & Thiếu Kiện Tháng 11</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1 id="page-main-title">⚡ Danh Sách Lỗi Để Sai Line Tháng 11</h1>
+      </header>
+
+      <!-- THANH MENU ĐIỀU HƯỚNG CHÍNH -->
+      <nav class="nav-menu">
+        <button class="nav-item active" onclick="switchNavTab('sai-line', event)">
+          ⚡ Sai Line
+        </button>
+        <button class="nav-item nav-thieu-kien" onclick="switchNavTab('thieu-kien', event)">
+          📦 Thiếu Kiện
+        </button>
+        <button class="nav-item nav-thong-ke" onclick="switchNavTab('thong-ke', event)">
+          📊 Thống Kê
+        </button>
+      </nav>
+
+      <!-- KHU VỰC DỮ LIỆU BẢNG CHÍNH (SAI LINE & THIẾU KIỆN) -->
+      <div id="tab-data-container">
+        <!-- Thanh tìm kiếm và Lọc theo ngày -->
+        <div
+          class="search-container"
+          style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center"
+        >
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="🔍 Nhập tên nhân viên, mã PT, vendor hoặc nhóm hàng cần tìm..."
+            onkeyup="searchTable()"
+            style="flex: 1; min-width: 280px"
+          />
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              background: #f8fafc;
+              padding: 8px 14px;
+              border: 1.5px solid #cbd5e1;
+              border-radius: 10px;
+            "
+          >
+            <label
+              for="dateFilter"
+              style="font-weight: 700; font-size: 13.5px; color: #475569; white-space: nowrap"
+              >📅 Ngày:</label
+            >
+            <input
+              type="date"
+              id="dateFilter"
+              onchange="filterByDate()"
+              style="
+                border: none;
+                background: transparent;
+                outline: none;
+                font-size: 14px;
+                color: #0f172a;
+                cursor: pointer;
+              "
+            />
+            <button
+              onclick="clearDateFilter()"
+              style="
+                border: none;
+                background: #e2e8f0;
+                color: #334155;
+                padding: 6px 12px;
+                border-radius: 6px;
+                font-weight: 700;
+                font-size: 12px;
+                cursor: pointer;
+              "
+            >
+              Xóa
+            </button>
+          </div>
+        </div>
+
+        <!-- Nhóm nút lọc loại lỗi (Sai Line) -->
+        <div class="button-group" id="sai-line-subfilter">
+          <button class="btn active" onclick="filterTable('all', event)">📋 Tất Cả</button>
+          <button class="btn" onclick="filterTable('Đúng line - sai số thứ tự', event)">
+            ⚠️ Đúng Line - Sai STT
+          </button>
+          <button class="btn" onclick="filterTable('Sai line - sai số thứ tự', event)">
+            ⚡ Sai Line - Sai STT
+          </button>
+          <button class="btn" onclick="filterTable('Đúng số thứ tự - sai line', event)">
+            🔍 Đúng STT - Sai Line
+          </button>
+        </div>
+
+        <!-- Bộ nút Vendor dành cho Sai Line -->
+        <div class="vendor-button-group" id="sai-line-vendor-group">
+          <span class="vendor-label">🏆 Thống Kê Nhân Viên ĐỂ SAI LINE:</span>
+          <button class="btn-vendor" onclick="showVendorRanking('Sai line', 'GHM', event)">
+            GHM
+          </button>
+          <button class="btn-vendor" onclick="showVendorRanking('Sai line', 'VCO', event)">
+            VCO
+          </button>
+          <button class="btn-vendor" onclick="showVendorRanking('Sai line', 'PST', event)">
+            PST
+          </button>
+          <button class="btn-vendor" onclick="showVendorRanking('Sai line', 'NVCT', event)">
+            NVCT
+          </button>
+          <button
+            class="btn-vendor btn-all-vendor active"
+            onclick="showVendorRanking('Sai line', 'ALL', event)"
+          >
+            Tất Cả Vendor
+          </button>
+        </div>
+
+        <!-- Bộ nút Vendor dành cho Thiếu Kiện -->
+        <div
+          class="vendor-button-group"
+          id="thieu-kien-vendor-group"
+          style="display: none; border-color: #9c27b0; background-color: #faf2fb"
+        >
+          <span class="vendor-label" style="color: #9c27b0">📦 Thống Kê Nhân Viên THIẾU KIỆN:</span>
+          <button class="btn-vendor" onclick="showVendorRanking('Thiếu kiện', 'GHM', event)">
+            GHM
+          </button>
+          <button class="btn-vendor" onclick="showVendorRanking('Thiếu kiện', 'VCO', event)">
+            VCO
+          </button>
+          <button class="btn-vendor" onclick="showVendorRanking('Thiếu kiện', 'PST', event)">
+            PST
+          </button>
+          <button class="btn-vendor" onclick="showVendorRanking('Thiếu kiện', 'NVCT', event)">
+            NVCT
+          </button>
+          <button
+            class="btn-vendor btn-all-vendor active"
+            onclick="showVendorRanking('Thiếu kiện', 'ALL', event)"
+          >
+            Tất Cả Vendor
+          </button>
+        </div>
+
+        <!-- Thanh chọn nhóm hàng khi xem xếp hạng vendor (Hiển thị cho cả 2 bên) -->
+        <div
+          class="vendor-button-group"
+          id="group-filter-bar"
+          style="
+            display: none;
+            background-color: #f1f5f9;
+            border-color: #cbd5e1;
+            margin-top: -12px;
+            margin-bottom: 24px;
+          "
+        >
+          <span class="vendor-label" style="color: #1e293b">📂 Lọc Theo Nhóm:</span>
+          <button
+            class="btn-vendor btn-all-vendor active"
+            onclick="filterRankingByGroup('ALL', event)"
+          >
+            Tất Cả Nhóm
+          </button>
+          <button class="btn-vendor" onclick="filterRankingByGroup('Nhóm 1', event)">Nhóm 1</button>
+          <button class="btn-vendor" onclick="filterRankingByGroup('Nhóm 2', event)">Nhóm 2</button>
+          <button class="btn-vendor" onclick="filterRankingByGroup('Nhóm 3A', event)">
+            Nhóm 3A
+          </button>
+          <button class="btn-vendor" onclick="filterRankingByGroup('Nhóm 3B', event)">
+            Nhóm 3B
+          </button>
+          <button class="btn-vendor" onclick="filterRankingByGroup('Nhóm 4', event)">Nhóm 4</button>
+        </div>
+
+        <!-- Bảng hiển thị dữ liệu chính -->
+        <div class="table-responsive" id="main-table-container">
+          <table id="data-table">
+            <thead>
+              <tr>
+                <th>STT</th>
+                <th>Ngày</th>
+                <th>Mã Phiếu Chuyển</th>
+                <th>Số Lượng</th>
+                <th>Line Đúng</th>
+                <th>Line Sai / Wave</th>
+                <th>Phân Loại (Note)</th>
+                <th>Nhân Viên Vi Phạm (User)</th>
+                <th>Vendor</th>
+                <th>Nhóm Hàng</th>
+                <th>Tổng Tiền</th>
+              </tr>
+            </thead>
+            <tbody id="table-body">
+              <!-- Render bằng JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Bảng xếp hạng nhân viên vi phạm theo Vendor -->
+        <section class="report-section" id="ranking-section" style="display: none">
+          <h2 id="ranking-title">🏆 Danh Sách Nhân Viên Vi Phạm Theo Vendor</h2>
+          <div class="table-responsive">
+            <table id="ranking-table">
+              <thead>
+                <tr>
+                  <th>Thứ Hạng</th>
+                  <th>Tên Nhân Viên (User)</th>
+                  <th>Vendor</th>
+                  <th>Tổng Số Kiện Sai</th>
+                  <th>Tổng Giá Trị Vi Phạm</th>
+                  <th>Tỷ Lệ Đóng Góp (%)</th>
+                </tr>
+              </thead>
+              <tbody id="ranking-body">
+                <!-- Render bằng JS -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <!-- KHU VỰC DÀNH CHO TAB THỐNG KÊ -->
+      <div id="tab-thong-ke" style="display: none">
+        <section class="report-section">
+          <h2>📦 Bảng Báo Cáo So Sánh Theo Nhóm Hàng (Tỷ Lệ Sai & Tiền Đền)</h2>
+          <div class="table-responsive">
+            <table id="group-report-table">
+              <thead>
+                <tr>
+                  <th>STT</th>
+                  <th>Phân Loại Nhóm</th>
+                  <th>Tổng Số Kiện Sai</th>
+                  <th>Tỷ Lệ Sai (%)</th>
+                  <th>Tổng Giá Trị Đền (VNĐ)</th>
+                  <th>Tỷ Lệ Đền (%)</th>
+                  <th>Đánh Giá Mức Độ</th>
+                </tr>
+              </thead>
+              <tbody id="group-report-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="report-section">
+          <h2>📈 Bảng Báo Cáo Tổng Hợp Theo Loại Lỗi</h2>
+          <div class="table-responsive">
+            <table id="report-table">
+              <thead>
+                <tr>
+                  <th>STT</th>
+                  <th>Loại Lỗi (Note)</th>
+                  <th>Tổng Số Kiện</th>
+                  <th>Tỷ Lệ (%)</th>
+                  <th>Tổng Tiền (VNĐ)</th>
+                  <th>Đánh Giá / Mức Độ</th>
+                </tr>
+              </thead>
+              <tbody id="report-body"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
